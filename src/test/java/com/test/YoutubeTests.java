@@ -25,12 +25,12 @@ public class YoutubeTests {
         ChromeOptions chrome = new ChromeOptions();
         configuration = new DriverConfig(chrome, "", false, Timeout.getDefault());
         factory = new ChromeDriverFactory();
+        Senelium.createDriver(configuration, factory);
+        Senelium.open("https://www.youtube.com");
     }
 
     @Test
     void youtubeTest() {
-        Senelium.createDriver(configuration, factory);
-        Senelium.open("https://www.youtube.com");
         Element search = new Element(By.cssSelector("input#search"));
         search.type("Christmas");
         Senelium.sleep(Duration.ofSeconds(3));

@@ -1,11 +1,10 @@
 package com.test.listener;
 
-import com.senelium.Senelium;
-import com.test.report.AllureManager;
-import io.qameta.allure.Attachment;
+import com.aventstack.extentreports.Status;
+import com.senelium.reports.AllureManager;
+import com.test.report.ExtentReportManager;
+import com.test.report.ExtentTestManager;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -21,41 +20,36 @@ public class TestListener implements ITestListener {
     @Override
     public void onFinish(ITestContext result) {
         System.out.println("Ending testing: " + result.getName());
+        ExtentReportManager.getExtentReports().flush();
     }
 
     @Override
     public void onTestStart(ITestResult result) {
         System.out.println("Start test case: " + result.getName());
+        ExtentTestManager.saveToReport(result.getName(), "Descriptions Here");
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
         System.out.println("Test case : " + result.getName() + " is success");
+        ExtentTestManager.logMessage(Status.PASS, result.getName() + " is passed.");
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
         System.out.println("Test case : " + result.getName() + " is failed");
-        saveTextLog(result.getName() + " is failed1.");
-        saveScreenshotPNG();
+
+        ExtentTestManager.addScreenShot(result.getName());
+        ExtentTestManager.logMessage(Status.FAIL, result.getThrowable().toString());
+        ExtentTestManager.logMessage(Status.FAIL, result.getName() + " is failed.");
+
+        AllureManager.saveScreenshotPNG();
+        AllureManager.saveTextLog("Test case : " + result.getName() + " is failed");
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
         System.out.println("Test case : " + result.getName() + " is skipped");
+        ExtentTestManager.logMessage(Status.SKIP, result.getThrowable().toString());
     }
-
-    @Attachment(value = "{0}", type = "text/plain")
-    public String saveTextLog(String message) {
-        return message;
-    }
-
-    @Attachment(value = "Page screenshot", type = "image/png")
-    public byte[] saveScreenshotPNG() {
-        System.out.println("taking screenshot");
-        TakesScreenshot screenshot = (TakesScreenshot) Senelium.getSeneDriver().getDriver();
-
-        return screenshot.getScreenshotAs(OutputType.BYTES);
-    }
-
 }
